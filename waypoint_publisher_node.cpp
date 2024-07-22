@@ -4,7 +4,7 @@
 #include <geometry_msgs/PointStamped.h>
 
 nav_msgs::Odometry current_odom, current_map;
-
+/*
 // Callback for handling point messages
 void pointCallback(const geometry_msgs::PointStamped::ConstPtr& msg)
 {
@@ -16,7 +16,7 @@ void pointCallback(const geometry_msgs::PointStamped::ConstPtr& msg)
     pose_msg.pose.orientation.w = 1.0; // Default orientation
     
     pose_pub.publish(pose_msg);
-}
+}*/
 
 // Callback for handling pose messages
 void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
@@ -25,10 +25,10 @@ void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
         // We don't have data yet
         return;
     }
-    static ros::Publisher pose_pub = ros::NodeHandle().advertise<geometry_msgs::PoseStamped>("clicked_pose", 10);
+    static ros::Publisher pose_pub = ros::NodeHandle().advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local", 10);
     geometry_msgs::PoseStamped pose_msg;
     // REVISAR HEADER. AHORA LA REFERENCIA ES LA DE RVIZ. QUIZA SEA MEJOR  EL HEADER DEL GLOBAL O LOCAL MAP
-    pose_msg.header = msg->header;
+    pose_msg.header = current_odom.header;
     pose_msg.pose.position = msg->pose.position;
     // TRADUZCO LA NUEVA POSICION SELECCIONADA A UNA POSICION EN LA REFERENCIA DEL MAPA LOCAL.
     pose_msg.pose.position.x = pose_msg.pose.position.x - current_map.pose.pose.position.x;
@@ -55,8 +55,8 @@ int main(int argc, char** argv)
 
     ros::Subscriber map_sub = nh.subscribe("/map_to_odom", 10, mapCallback);
     ros::Subscriber odom_sub = nh.subscribe("/Odometry", 10, odomCallback);
-    ros::Subscriber point_sub = nh.subscribe("/clicked_point", 10, pointCallback);
-    ros::Subscriber pose_sub = nh.subscribe("/mavros/setpoint_position/local", 10, poseCallback);
+    //ros::Subscriber point_sub = nh.subscribe("/clicked_point", 10, pointCallback);
+    ros::Subscriber pose_sub = nh.subscribe("/clicked_pose", 10, poseCallback);
 
     ros::spin();
     return 0;
